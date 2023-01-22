@@ -1,0 +1,11 @@
+.git/
+node_modules/
+dist/
+build/
+coverage/
+.vscode/
+tmp/
+temp/
+
+.env*
+!.env.example

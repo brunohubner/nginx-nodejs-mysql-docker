@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  test_node-app:
+    container_name: test_node-app
+    build:
+      context: .
+      dockerfile: ./Dockerfile.node-js
+    image: brunohubner/test_node-app
+    entrypoint: dockerize -wait tcp://test_mysql:${DB_PORT} -timeout 20s docker-entrypoint.sh
+    command: npm run dev
+    environment:
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    ports:
+      - ${PORT}:${PORT}
+    links:
+      - test_mysql
+    depends_on:
+      - test_mysql
+    volumes:
+      - ./:/app/
+      - nodemodules:/app/node_modules
+    networks:
+      - nginx-node-network
+        
+  test_mysql:
+    image: mysql:8.0.32
+    container_name: test_mysql
+    tty: true
+    restart: always
+    cap_add:
+      - SYS_NICE
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - test_mysql:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks: 
+      - nginx-node-network
+
+networks:
+  nginx-node-network:
+    driver: bridge
+
+volumes:
+  nodemodules: {}
+  test_mysql:
+    driver: local
