@@ -5,7 +5,7 @@ services:
     container_name: test_node-app
     build:
       context: .
-      dockerfile: ./Dockerfile.node-js
+      dockerfile: ./docker/node.dockerfile
     image: brunohubner/test_node-app
     entrypoint: dockerize -wait tcp://test_mysql:${DB_PORT} -timeout 20s docker-entrypoint.sh
     command: npm run dev
@@ -17,8 +17,6 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-    ports:
-      - ${PORT}:${PORT}
     links:
       - test_mysql
     depends_on:
@@ -39,13 +37,26 @@ services:
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-    ports:
-      - ${DB_PORT}:${DB_PORT}
     volumes:
       - test_mysql:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks: 
       - nginx-node-mysql
+
+  test_nginx:
+    build:
+      dockerfile: ./docker/nginx.dockerfile
+      context: .
+    image: brunohubner/test_nginx
+    container_name: test_nginx
+    environment:
+      - NODE_APP_PORT=${PORT}
+    ports:
+      - "80:80"
+    networks: 
+      - nginx-node-mysql
+    depends_on:
+      - "test_node-app"
 
 networks:
   nginx-node-mysql:

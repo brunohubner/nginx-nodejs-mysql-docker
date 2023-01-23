@@ -1,4 +1,5 @@
 .git/
+docker/
 node_modules/
 dist/
 build/
