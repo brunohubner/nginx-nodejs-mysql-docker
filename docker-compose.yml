@@ -27,7 +27,7 @@ services:
       - ./:/app/
       - nodemodules:/app/node_modules
     networks:
-      - nginx-node-network
+      - nginx-node-mysql
         
   test_mysql:
     image: mysql:8.0.32
@@ -45,10 +45,10 @@ services:
       - test_mysql:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks: 
-      - nginx-node-network
+      - nginx-node-mysql
 
 networks:
-  nginx-node-network:
+  nginx-node-mysql:
     driver: bridge
 
 volumes:
